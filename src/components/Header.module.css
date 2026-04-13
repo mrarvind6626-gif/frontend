@@ -1,0 +1,199 @@
+/* ══════════════════════════════════════════════
+   ACPC Header — matches institutional site style
+   ══════════════════════════════════════════════ */
+
+.header {
+  width: 100%;
+  font-family: 'Inter', sans-serif;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+/* ─── Row 1: Logo + title ─── */
+
+.topBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #ffffff;
+  padding: 10px 24px;
+  gap: 16px;
+}
+
+.logoLeft,
+.logoRight {
+  flex: 0 0 auto;
+}
+
+.titleBlock {
+  flex: 1;
+  text-align: center;
+}
+
+.titleGujarati {
+  margin: 0 0 4px;
+  font-family: 'Noto Sans Gujarati', 'Inter', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #1B2D6E;
+  line-height: 1.4;
+}
+
+.titleEnglish {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1B2D6E;
+  letter-spacing: 0.01em;
+}
+
+/* ─── Row 2: Gold announcement bar ─── */
+
+.announcementBar {
+  background: #F5A623;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 24px;
+  gap: 16px;
+}
+
+.announcementLink {
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.82rem;
+  text-decoration: none;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.announcementLink:hover {
+  text-decoration: underline;
+}
+
+.socialStrip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.stayUpdated {
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.socialStrip a {
+  display: flex;
+  align-items: center;
+  opacity: 0.95;
+  transition: opacity 0.15s;
+}
+
+.socialStrip a:hover {
+  opacity: 1;
+}
+
+/* ─── Row 3: Navy navigation ─── */
+
+.navBar {
+  background: #1B2D6E;
+  padding: 0 16px;
+}
+
+.navList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.navItem {
+  position: relative;
+}
+
+.navLink {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  color: #ffffff;
+  text-decoration: none;
+  font-size: 0.82rem;
+  font-weight: 500;
+  padding: 11px 13px;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+}
+
+.navLink:hover {
+  background: #F5A623;
+  color: #fff;
+}
+
+.caret {
+  font-size: 0.7rem;
+  opacity: 0.8;
+}
+
+/* ─── Mobile toggle ─── */
+
+.mobileToggle {
+  display: none;
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 1.4rem;
+  cursor: pointer;
+  padding: 10px 4px;
+}
+
+/* ─── Responsive ─── */
+
+@media (max-width: 768px) {
+  .topBar {
+    padding: 10px 12px;
+  }
+
+  .titleGujarati {
+    font-size: 0.82rem;
+  }
+
+  .titleEnglish {
+    font-size: 0.8rem;
+  }
+
+  .announcementBar {
+    flex-direction: column;
+    gap: 4px;
+    padding: 6px 12px;
+    text-align: center;
+  }
+
+  .mobileToggle {
+    display: block;
+  }
+
+  .navList {
+    display: none;
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .navListOpen {
+    display: flex;
+  }
+
+  .navLink {
+    padding: 10px 16px;
+    width: 100%;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+}
