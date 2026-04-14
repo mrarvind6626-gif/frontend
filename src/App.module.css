@@ -290,51 +290,120 @@
   40%            { transform: translateY(-6px); opacity: 1; }
 }
 
-/* ─── Sources & Play button ─── */
+/* ─── Collapsible Sources ─── */
 
 .sources {
   margin-top: 10px;
-  padding-top: 10px;
+  padding-top: 8px;
   border-top: 1px solid #eee;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
 }
 
-.sourcesLabel {
-  margin: 0;
-  font-size: 0.75rem;
+.sourcesToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px 5px 10px;
+  border: 1px solid #d8dbe6;
+  border-radius: 20px;
+  background: #f5f6fa;
+  color: #1B2D6E;
+  font-size: 0.78rem;
   font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+  user-select: none;
+}
+
+.sourcesToggle:hover {
+  background: #e8eaf0;
+  border-color: #b0b6cc;
+  box-shadow: 0 1px 4px rgba(27, 45, 110, 0.08);
+}
+
+.sourcesToggleOpen {
+  background: #e8eaf0;
+  border-color: #1B2D6E;
+}
+
+.sourcesIcon {
+  flex-shrink: 0;
+  color: #F5A623;
+}
+
+.chevron {
+  flex-shrink: 0;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   color: #888;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+}
+
+.sourcesList {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 0;
+}
+
+/* Add spacing only when open — avoids top gap while collapsed */
+.sourcesToggleOpen + .sourcesList {
+  padding-top: 8px;
 }
 
 .sourceCard {
   background: #f9fafb;
   border: 1px solid #e8eaf0;
-  border-radius: 6px;
-  padding: 8px 10px;
+  border-radius: 8px;
+  padding: 8px 12px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.sourceCard:hover {
+  border-color: #c8ccdd;
+  box-shadow: 0 1px 6px rgba(27, 45, 110, 0.06);
+}
+
+.sourceCardHeader {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.sourceCardIcon {
+  flex-shrink: 0;
+  color: #999;
 }
 
 .sourceLink {
-  display: block;
   font-size: 0.8rem;
   font-weight: 600;
   color: #1B2D6E;
-  text-decoration: underline;
+  text-decoration: none;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
+.sourceLink:hover {
+  text-decoration: underline;
+  color: #F5A623;
+}
+
 .sourcePreview {
-  margin: 4px 0 0;
-  font-size: 0.78rem;
+  margin: 5px 0 0;
+  padding-left: 18px;
+  font-size: 0.76rem;
   color: #666;
-  line-height: 1.45;
+  line-height: 1.5;
   display: -webkit-box;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -728,6 +797,11 @@
     border-radius: 50%;
   }
 
+  .sourcesToggle {
+    font-size: 0.74rem;
+    padding: 4px 10px 4px 8px;
+  }
+
   .sourceCard {
     padding: 6px 8px;
   }
@@ -737,7 +811,8 @@
   }
 
   .sourcePreview {
-    font-size: 0.73rem;
+    font-size: 0.72rem;
+    padding-left: 0;
     -webkit-line-clamp: 2;
   }
 
