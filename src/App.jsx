@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import ReactMarkdown from 'react-markdown';
 import { getSuggestedQuestions, sendChatMessage } from './services/api.js';
 import styles from './App.module.css';
 
@@ -65,8 +66,10 @@ function TypingIndicator() {
 }
 
 /* ─── Single message bubble ─── */
-function Message({ msg, onPlay }) {
+function Message({ msg, onPlay, playingMsgId, isAudioPaused }) {
   const isUser = msg.role === 'user';
+  const isThisPlaying = playingMsgId === msg.id;
+  const isThisPaused = isThisPlaying && isAudioPaused;
 
   return (
     <div className={`${styles.msgRow} ${isUser ? styles.msgRowUser : ''}`}>
@@ -80,29 +83,47 @@ function Message({ msg, onPlay }) {
       )}
 
       <div className={`${styles.bubble} ${isUser ? styles.userBubble : styles.botBubble}`}>
-        <p className={styles.bubbleText}>{msg.content}</p>
+        {isUser ? (
+          <p className={styles.bubbleText}>{msg.content}</p>
+        ) : (
+          <div className={styles.markdown}>
+            <ReactMarkdown>{msg.content}</ReactMarkdown>
+          </div>
+        )}
 
         {!isUser && msg.sources && msg.sources.length > 0 && (
           <div className={styles.sources}>
             <p className={styles.sourcesLabel}>Sources:</p>
             {msg.sources.map((s, i) => (
-              <a key={i} href={s.url || '#'} target="_blank" rel="noreferrer" className={styles.sourceLink}>
-                {s.file_name || s.url}
-              </a>
+              <div key={i} className={styles.sourceCard}>
+                <a href={s.url || '#'} target="_blank" rel="noreferrer" className={styles.sourceLink}>
+                  {s.file_name || s.url || 'Source'}
+                </a>
+                {s.text_preview && (
+                  <p className={styles.sourcePreview}>{s.text_preview}</p>
+                )}
+              </div>
             ))}
           </div>
         )}
 
         {!isUser && msg.audioBase64 && (
           <button
-            className={styles.playBtn}
-            onClick={() => onPlay(msg.audioBase64)}
-            title="Play audio response"
+            className={`${styles.playBtn} ${isThisPlaying && !isThisPaused ? styles.playBtnActive : ''}`}
+            onClick={() => onPlay(msg.id, msg.audioBase64)}
+            title={isThisPlaying && !isThisPaused ? 'Pause audio' : 'Play audio response'}
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M8 5v14l11-7z" />
-            </svg>
-            Play
+            {isThisPlaying && !isThisPaused ? (
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                <rect x="6" y="4" width="4" height="16" />
+                <rect x="14" y="4" width="4" height="16" />
+              </svg>
+            ) : (
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M8 5v14l11-7z" />
+              </svg>
+            )}
+            {isThisPlaying && !isThisPaused ? 'Pause' : 'Play'}
           </button>
         )}
       </div>
@@ -129,6 +150,8 @@ export default function App() {
   const [isRecording, setIsRecording] = useState(false);
   const [receiveAudio, setReceiveAudio] = useState(false);
   const [error, setError] = useState(null);
+  const [playingMsgId, setPlayingMsgId] = useState(null);
+  const [isAudioPaused, setIsAudioPaused] = useState(false);
 
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
@@ -138,8 +161,7 @@ export default function App() {
   /* Single audio instance — stops previous before playing new */
   const currentAudioRef = useRef(null);
 
-  const playAudioBase64 = (audioBase64) => {
-    // Stop and clean up any currently playing audio (restart if same)
+  const stopAndCleanupAudio = () => {
     if (currentAudioRef.current) {
       currentAudioRef.current.pause();
       if (currentAudioRef.current._blobUrl) {
@@ -147,6 +169,25 @@ export default function App() {
       }
       currentAudioRef.current = null;
     }
+    setPlayingMsgId(null);
+    setIsAudioPaused(false);
+  };
+
+  const playAudioBase64 = (msgId, audioBase64) => {
+    // If same message is currently playing — toggle pause/resume
+    if (currentAudioRef.current && playingMsgId === msgId) {
+      if (isAudioPaused) {
+        currentAudioRef.current.play().catch(() => {});
+        setIsAudioPaused(false);
+      } else {
+        currentAudioRef.current.pause();
+        setIsAudioPaused(true);
+      }
+      return;
+    }
+
+    // Stop any other audio before starting new playback
+    stopAndCleanupAudio();
     if (!audioBase64) return;
 
     const binary = atob(audioBase64);
@@ -156,10 +197,16 @@ export default function App() {
     const audio = new Audio(url);
     audio._blobUrl = url;
     currentAudioRef.current = audio;
+    setPlayingMsgId(msgId);
+    setIsAudioPaused(false);
     audio.play().catch(() => {});
     audio.onended = () => {
       URL.revokeObjectURL(url);
-      if (currentAudioRef.current === audio) currentAudioRef.current = null;
+      if (currentAudioRef.current === audio) {
+        currentAudioRef.current = null;
+        setPlayingMsgId(null);
+        setIsAudioPaused(false);
+      }
     };
   };
 
@@ -212,10 +259,11 @@ export default function App() {
         receiveAudio,
       });
 
+      const botMsgId = (Date.now() + 1).toString();
       setMessages((prev) => [
         ...prev,
         {
-          id: (Date.now() + 1).toString(),
+          id: botMsgId,
           role: 'assistant',
           content: data.answer,
           sources: data.sources ?? [],
@@ -225,7 +273,7 @@ export default function App() {
 
       // Auto-play audio when the query came from the microphone
       if (autoPlayAudio && data.audio_base64) {
-        playAudioBase64(data.audio_base64);
+        playAudioBase64(botMsgId, data.audio_base64);
       }
     } catch (err) {
       setError(err.message || 'Something went wrong. Please try again.');
@@ -323,7 +371,7 @@ export default function App() {
           {/* ── Messages ── */}
           <div className={styles.messagesArea} role="log" aria-live="polite">
             {messages.map((msg) => (
-              <Message key={msg.id} msg={msg} onPlay={playAudioBase64} />
+              <Message key={msg.id} msg={msg} onPlay={playAudioBase64} playingMsgId={playingMsgId} isAudioPaused={isAudioPaused} />
             ))}
             {isLoading && <TypingIndicator />}
             <div ref={messagesEndRef} />

@@ -170,6 +170,101 @@
   white-space: pre-wrap;
 }
 
+/* ─── Markdown content ─── */
+
+.markdown {
+  line-height: 1.6;
+  word-break: break-word;
+}
+
+.markdown p {
+  margin: 0 0 8px;
+}
+
+.markdown p:last-child {
+  margin-bottom: 0;
+}
+
+.markdown h1,
+.markdown h2,
+.markdown h3,
+.markdown h4 {
+  margin: 12px 0 6px;
+  color: #1B2D6E;
+  line-height: 1.3;
+}
+
+.markdown h1 { font-size: 1.15rem; }
+.markdown h2 { font-size: 1.05rem; }
+.markdown h3 { font-size: 0.95rem; }
+
+.markdown ul,
+.markdown ol {
+  margin: 4px 0 8px;
+  padding-left: 20px;
+}
+
+.markdown li {
+  margin-bottom: 4px;
+}
+
+.markdown code {
+  background: #f0f2f8;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 0.84rem;
+  font-family: 'Consolas', 'Monaco', monospace;
+}
+
+.markdown pre {
+  background: #f0f2f8;
+  padding: 10px 12px;
+  border-radius: 6px;
+  overflow-x: auto;
+  margin: 8px 0;
+}
+
+.markdown pre code {
+  background: none;
+  padding: 0;
+}
+
+.markdown a {
+  color: #1B2D6E;
+  text-decoration: underline;
+}
+
+.markdown blockquote {
+  margin: 8px 0;
+  padding: 4px 12px;
+  border-left: 3px solid #F5A623;
+  color: #555;
+}
+
+.markdown table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 8px 0;
+  font-size: 0.85rem;
+}
+
+.markdown th,
+.markdown td {
+  border: 1px solid #e0e0e0;
+  padding: 6px 10px;
+  text-align: left;
+}
+
+.markdown th {
+  background: #f0f2f8;
+  font-weight: 600;
+  color: #1B2D6E;
+}
+
+.markdown strong {
+  color: #1B2D6E;
+}
+
 /* ─── Typing indicator ─── */
 
 .typingBubble {
@@ -198,13 +293,16 @@
 /* ─── Sources & Play button ─── */
 
 .sources {
-  margin-top: 8px;
-  padding-top: 8px;
+  margin-top: 10px;
+  padding-top: 10px;
   border-top: 1px solid #eee;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .sourcesLabel {
-  margin: 0 0 4px;
+  margin: 0;
   font-size: 0.75rem;
   font-weight: 600;
   color: #888;
@@ -212,15 +310,33 @@
   letter-spacing: 0.04em;
 }
 
+.sourceCard {
+  background: #f9fafb;
+  border: 1px solid #e8eaf0;
+  border-radius: 6px;
+  padding: 8px 10px;
+}
+
 .sourceLink {
   display: block;
   font-size: 0.8rem;
+  font-weight: 600;
   color: #1B2D6E;
   text-decoration: underline;
-  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  margin-bottom: 2px;
+  white-space: nowrap;
+}
+
+.sourcePreview {
+  margin: 4px 0 0;
+  font-size: 0.78rem;
+  color: #666;
+  line-height: 1.45;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .playBtn {
@@ -240,6 +356,14 @@
 
 .playBtn:hover {
   background: #F5A623;
+}
+
+.playBtnActive {
+  background: #F5A623;
+}
+
+.playBtnActive:hover {
+  background: #d48a10;
 }
 
 /* ─── Error banner ─── */
@@ -510,15 +634,86 @@
 
 /* ─── Responsive ─── */
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
+  .main {
+    padding: 16px 10px 10px;
+    gap: 14px;
+  }
+
+  .pageTitleStrip {
+    padding: 10px 14px;
+  }
+
+  .pageTitleRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .langSelector {
+    align-self: flex-start;
+  }
+
+  .pageTitle {
+    font-size: 1.15rem;
+  }
+
+  .pageSubtitle {
+    font-size: 0.8rem;
+  }
+
   .messagesArea {
-    min-height: 300px;
-    max-height: 360px;
-    padding: 14px 12px 8px;
+    min-height: 0;
+    max-height: none;
+    flex: 1 1 0;
+    padding: 14px 10px 8px;
+  }
+
+  .chatCard {
+    flex: 1;
+    min-height: 0;
   }
 
   .bubble {
-    max-width: 88%;
+    max-width: 90%;
+    padding: 8px 12px;
+    font-size: 0.85rem;
+  }
+
+  .botAvatar {
+    width: 28px;
+    height: 28px;
+  }
+
+  .botAvatar svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .suggestionsRow {
+    padding: 8px 10px;
+    gap: 6px;
+  }
+
+  .suggestionChip {
+    font-size: 0.75rem;
+    padding: 5px 10px;
+  }
+
+  .inputBar {
+    padding: 8px 10px;
+    gap: 6px;
+  }
+
+  .inputField {
+    font-size: 0.85rem;
+    padding: 8px 10px;
+  }
+
+  .audioToggleBtn,
+  .micBtn {
+    width: 36px;
+    height: 36px;
   }
 
   .sendBtn span {
@@ -526,8 +721,78 @@
   }
 
   .sendBtn {
-    width: 40px;
+    width: 36px;
+    height: 36px;
     padding: 0;
     justify-content: center;
+    border-radius: 50%;
+  }
+
+  .sourceCard {
+    padding: 6px 8px;
+  }
+
+  .sourceLink {
+    font-size: 0.75rem;
+  }
+
+  .sourcePreview {
+    font-size: 0.73rem;
+    -webkit-line-clamp: 2;
+  }
+
+  .footer {
+    font-size: 0.7rem;
+    padding: 10px 12px;
+  }
+
+  .errorBanner {
+    margin: 0 8px;
+    font-size: 0.8rem;
+    padding: 8px 12px;
+  }
+}
+
+/* Small phones */
+@media (max-width: 380px) {
+  .main {
+    padding: 10px 6px 6px;
+  }
+
+  .bubble {
+    max-width: 94%;
+  }
+
+  .pageTitleStrip {
+    padding: 8px 10px;
+  }
+
+  .pageTitle {
+    font-size: 1.05rem;
+  }
+}
+
+/* Full-height layout for mobile so chat fills the screen */
+@media (max-height: 700px) and (max-width: 768px) {
+  .page {
+    height: 100vh;
+    height: 100dvh;
+  }
+
+  .main {
+    flex: 1;
+    min-height: 0;
+    gap: 8px;
+  }
+
+  .chatCard {
+    flex: 1;
+    min-height: 0;
+  }
+
+  .messagesArea {
+    min-height: 0;
+    max-height: none;
+    flex: 1;
   }
 }
