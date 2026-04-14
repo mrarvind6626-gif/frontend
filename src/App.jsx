@@ -1,10 +1,51 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { getSuggestedQuestions, sendChatMessage } from './services/api.js';
 import styles from './App.module.css';
 
 /* ─── One stable session ID per page load ─── */
 const SESSION_ID = crypto.randomUUID();
+
+/* ─── Typewriter hook — reveals text word-by-word ─── */
+const WORDS_PER_TICK = 2;
+const TICK_MS = 30;
+
+function useTypewriter(fullText, enabled) {
+  const [displayed, setDisplayed] = useState(enabled ? '' : fullText);
+  const [done, setDone] = useState(!enabled);
+  const wordsRef = useRef([]);
+  const idxRef = useRef(0);
+
+  useEffect(() => {
+    if (!enabled) {
+      setDisplayed(fullText);
+      setDone(true);
+      return;
+    }
+
+    // Split into words keeping whitespace attached so markdown stays intact
+    wordsRef.current = fullText.match(/\S+\s*/g) || [];
+    idxRef.current = 0;
+    setDisplayed('');
+    setDone(false);
+
+    const timer = setInterval(() => {
+      idxRef.current += WORDS_PER_TICK;
+      const slice = wordsRef.current.slice(0, idxRef.current).join('');
+      setDisplayed(slice);
+
+      if (idxRef.current >= wordsRef.current.length) {
+        clearInterval(timer);
+        setDisplayed(fullText); // ensure exact match at the end
+        setDone(true);
+      }
+    }, TICK_MS);
+
+    return () => clearInterval(timer);
+  }, [fullText, enabled]);
+
+  return { displayed, done };
+}
 
 /* ─── i18n translations ─── */
 const I18N = {
@@ -133,10 +174,24 @@ function CollapsibleSources({ sources }) {
 }
 
 /* ─── Single message bubble ─── */
-function Message({ msg, onPlay, playingMsgId, isAudioPaused }) {
+function Message({ msg, onPlay, playingMsgId, isAudioPaused, onStreamDone }) {
   const isUser = msg.role === 'user';
   const isThisPlaying = playingMsgId === msg.id;
   const isThisPaused = isThisPlaying && isAudioPaused;
+
+  const { displayed, done } = useTypewriter(
+    msg.content,
+    !isUser && !!msg.streaming,
+  );
+
+  /* Notify parent when streaming finishes so it can clear the flag */
+  const notifiedRef = useRef(false);
+  useEffect(() => {
+    if (done && msg.streaming && !notifiedRef.current) {
+      notifiedRef.current = true;
+      onStreamDone?.(msg.id);
+    }
+  }, [done, msg.streaming, msg.id, onStreamDone]);
 
   return (
     <div className={`${styles.msgRow} ${isUser ? styles.msgRowUser : ''}`}>
@@ -154,17 +209,20 @@ function Message({ msg, onPlay, playingMsgId, isAudioPaused }) {
           <p className={styles.bubbleText}>{msg.content}</p>
         ) : (
           <div className={styles.markdown}>
-            <ReactMarkdown>{msg.content}</ReactMarkdown>
+            <ReactMarkdown>{displayed}</ReactMarkdown>
+            {!done && <span className={styles.cursor} />}
           </div>
         )}
 
-        {!isUser && msg.sources && msg.sources.length > 0 && (
-          <CollapsibleSources sources={msg.sources} />
+        {!isUser && done && msg.sources && msg.sources.length > 0 && (
+          <div className={msg.streaming ? styles.fadeIn : undefined}>
+            <CollapsibleSources sources={msg.sources} />
+          </div>
         )}
 
-        {!isUser && msg.audioBase64 && (
+        {!isUser && done && msg.audioBase64 && (
           <button
-            className={`${styles.playBtn} ${isThisPlaying && !isThisPaused ? styles.playBtnActive : ''}`}
+            className={`${styles.playBtn} ${isThisPlaying && !isThisPaused ? styles.playBtnActive : ''} ${msg.streaming ? styles.fadeIn : ''}`}
             onClick={() => onPlay(msg.id, msg.audioBase64)}
             title={isThisPlaying && !isThisPaused ? 'Pause audio' : 'Play audio response'}
           >
@@ -323,6 +381,7 @@ export default function App() {
           content: data.answer,
           sources: data.sources ?? [],
           audioBase64: data.audio_base64 ?? null,
+          streaming: true,
         },
       ]);
 
@@ -391,6 +450,13 @@ export default function App() {
     else startRecording();
   };
 
+  /* Clear streaming flag once typewriter finishes */
+  const handleStreamDone = useCallback((msgId) => {
+    setMessages((prev) =>
+      prev.map((m) => (m.id === msgId ? { ...m, streaming: false } : m))
+    );
+  }, []);
+
   return (
     <div className={styles.page}>
       <main className={styles.main}>
@@ -426,7 +492,7 @@ export default function App() {
           {/* ── Messages ── */}
           <div className={styles.messagesArea} role="log" aria-live="polite">
             {messages.map((msg) => (
-              <Message key={msg.id} msg={msg} onPlay={playAudioBase64} playingMsgId={playingMsgId} isAudioPaused={isAudioPaused} />
+              <Message key={msg.id} msg={msg} onPlay={playAudioBase64} playingMsgId={playingMsgId} isAudioPaused={isAudioPaused} onStreamDone={handleStreamDone} />
             ))}
             {isLoading && <TypingIndicator />}
             <div ref={messagesEndRef} />
